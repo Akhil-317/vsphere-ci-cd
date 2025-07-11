@@ -1,0 +1,4 @@
+---
+java_package: java-11-openjdk-devel
+docker_pkg: docker.io
+master_host: 192.168.128.171

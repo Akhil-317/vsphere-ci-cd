@@ -1,0 +1,47 @@
+---
+# roles/common/tasks/main.yml
+
+- name: Update & upgrade all packages
+  yum:
+    name: "*"
+    state: latest
+    update_cache: yes
+
+- name: Ensure sudo is installed
+  yum:
+    name: sudo
+    state: present
+
+# 🔧 Install OpenJDK 17 and set as default
+- name: Install Java 17 and configure as default
+  block:
+
+    - name: Install OpenJDK 17 (full + headless)
+      yum:
+        name:
+          - java-17-openjdk
+          - java-17-openjdk-devel
+          - java-17-openjdk-headless
+        state: present
+
+    - name: Remove unsupported Java versions (e.g., Java 11)
+      yum:
+        name:
+          - java-11-openjdk
+          - java-11-openjdk-devel
+          - java-11-openjdk-headless
+        state: absent
+      ignore_errors: yes  # Safe to ignore if not installed
+
+    - name: Set Java 17 as the system default
+      command: alternatives --set java /usr/lib/jvm/java-17-openjdk/bin/java
+      when: ansible_facts['os_family'] == "RedHat"
+
+    - name: Verify current Java version
+      command: java -version
+      register: java_version_output
+      changed_when: false
+
+    - name: Show Java version
+      debug:
+        msg: "{{ java_version_output.stdout_lines }}"

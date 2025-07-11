@@ -1,0 +1,3 @@
+---
+jenkins_agent_secret: "42f90c4bc345cb973da4621714318b2b93fcaf273360d159b6b137794f9038ab"
+jenkins_agent_node_name: "jenkins_agent"

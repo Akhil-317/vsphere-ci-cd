@@ -1,0 +1,17 @@
+[Unit]
+Description=Jenkins Agent
+After=network.target
+
+[Service]
+User=jenkins
+ExecStart=/usr/bin/java -jar /opt/jenkins/agent.jar \
+  -url {{ master_url }} \
+  -secret {{ jenkins_agent_secret }} \
+  -name {{ jenkins_agent_node_name }} \
+  -webSocket \
+  -workDir /opt/jenkins
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

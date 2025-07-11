@@ -1,0 +1,19 @@
+[Unit]
+Description=Jenkins CI Master
+After=network.target
+
+[Service]
+Type=simple
+User=jenkins
+Group=jenkins
+WorkingDirectory=/var/lib/jenkins
+
+ExecStart=/usr/bin/java \
+  -Djenkins.install.runSetupWizard=false \
+  -jar /usr/share/java/jenkins.war
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

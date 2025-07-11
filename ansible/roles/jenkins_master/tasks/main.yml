@@ -1,0 +1,61 @@
+---
+# ensure the jenkins user & home come first
+- name: Ensure jenkins user and home
+  user:
+    name: jenkins
+    shell: /bin/bash
+    createhome: yes
+
+- name: Create Jenkins home directory
+  file:
+    path: /var/lib/jenkins
+    state: directory
+    owner: jenkins
+    group: jenkins
+    mode: '0755'
+
+- name: Add Jenkins GPG key
+  rpm_key:
+    state: present
+    key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+- name: Add Jenkins yum repository
+  yum_repository:
+    name: jenkins
+    description: Jenkins-stable
+    baseurl: https://pkg.jenkins.io/redhat-stable
+    gpgcheck: yes
+    gpgkey: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+    state: present
+
+- name: Install Jenkins package
+  yum:
+    name: jenkins
+    state: present
+
+- name: Deploy Jenkins systemd unit
+  template:
+    src: jenkins.service.j2
+    dest: /etc/systemd/system/jenkins.service
+  notify: Reload systemd
+
+- name: Enable & start Jenkins
+  service:
+    name: jenkins
+    state: started
+    enabled: yes
+
+- name: Open Jenkins HTTP port in firewalld
+  firewalld:
+    port: "{{ jenkins_http_port }}/tcp"
+    permanent: yes
+    state: enabled
+    immediate: yes
+# (drop the Reload firewalld task)
+- name: Open JNLP agent port in firewalld
+  firewalld:                     # or ansible.posix.firewalld if you prefer explicit collection
+    port: 50000/tcp
+    permanent: yes
+    state: enabled
+  notify: Reload firewalld
+

@@ -1,0 +1,37 @@
+- name: Ensure jenkins user exists
+  user:
+    name: jenkins
+    shell: /bin/bash
+    state: present
+
+- name: Create Jenkins agent directory
+  file:
+    path: /opt/jenkins
+    state: directory
+    mode: '0755'
+
+- name: Download Jenkins agent.jar
+  get_url:
+    url: "{{ master_url }}/jnlpJars/agent.jar"
+    dest: /opt/jenkins/agent.jar
+    mode: '0755'
+
+- name: Set ownership of /opt/jenkins
+  file:
+    path: /opt/jenkins
+    owner: jenkins
+    group: jenkins
+    recurse: yes
+
+- name: Deploy Jenkins agent systemd unit
+  template:
+    src: agent.service.j2
+    dest: /etc/systemd/system/jenkins-agent.service
+  notify:
+    - Reload systemd
+    - Restart Jenkins agent
+
+- name: Enable Jenkins agent
+  service:
+    name: jenkins-agent
+    enabled: true

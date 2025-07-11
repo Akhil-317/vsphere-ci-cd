@@ -1,0 +1,37 @@
+---
+# roles/docker/tasks/main.yml
+
+- name: Disable the built-in container-tools module
+  raw: >
+    dnf -qy module disable container-tools
+
+- name: Remove conflicting Podman & runc packages
+  yum:
+    name:
+      - podman
+      - podman-docker
+      - runc
+    state: absent
+
+- name: Add the Docker CE repository
+  yum_repository:
+    name: docker-ce
+    description: Docker CE Stable - $basearch
+    baseurl: https://download.docker.com/linux/centos/8/$basearch/stable
+    gpgcheck: yes
+    gpgkey: https://download.docker.com/linux/centos/gpg
+    enabled: yes
+
+- name: Install Docker CE, CLI & containerd
+  yum:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: present
+
+- name: Enable & start Docker service
+  service:
+    name: docker
+    state: started
+    enabled: true

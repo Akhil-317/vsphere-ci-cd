@@ -1,0 +1,47 @@
+---
+# playbooks/site.yml
+
+- name: Prep all machines
+  hosts: all
+  become: true
+  tasks:
+    - name: Disable the EL8 container-tools module
+      raw: dnf -qy module disable container-tools
+
+    - name: Remove conflicting Podman/runc packages
+      yum:
+        name:
+          - podman
+          - podman-docker
+          - runc
+        state: absent
+
+- name: Set up Jenkins Master
+  hosts: jenkins_master
+  become: true
+  gather_facts: yes
+  roles:
+    - common
+    - docker
+    - jenkins_master
+
+- name: Wait for Jenkins UI to become available
+  hosts: jenkins_master
+  tasks:
+    - name: Wait for Jenkins to respond on port 8080
+      uri:
+        url: http://{{ inventory_hostname }}:8080/login
+        status_code: 200
+      register: jenkins_check
+      retries: 10
+      delay: 10
+      until: jenkins_check.status == 200
+
+- name: Set up Jenkins Agent
+  hosts: jenkins_agent
+  become: true
+  gather_facts: yes
+  roles:
+    - common
+    - docker
+    - jenkins_agent

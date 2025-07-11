@@ -1,0 +1,3 @@
+---
+jenkins_http_port:      8080
+jenkins_admin_password: "11a5474852b947fda28797042586a4b9"
