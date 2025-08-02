@@ -1,29 +1,30 @@
-# 1. Use official Python 3.10 slim base image
+# 1. Use official Python base image
 FROM python:3.10-slim
 
 # 2. Set working directory
 WORKDIR /app
 
-# 3. Install required system dependencies for building Python packages like aiohttp
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# 3. Copy requirements first for caching
+COPY requirements.txt .
+
+# 4. Install system dependencies required for aiohttp and psycopg2
+RUN apt-get update && apt-get install -y \
     gcc \
-    build-essential \
-    libffi-dev \
+    libpq-dev \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# 4. Copy requirements file first (for Docker layer caching)
-COPY requirements.txt .
+# 5. Upgrade pip, setuptools, wheel to avoid aiohttp build issues
+RUN pip install --upgrade pip setuptools wheel
 
-# 5. Upgrade pip, setuptools, and wheel, then install Python dependencies
-RUN pip install --upgrade pip setuptools wheel \
-    && pip install --no-cache-dir -r requirements.txt
+# 6. Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
 
-# 6. Copy the rest of the application code
+# 7. Copy all source code
 COPY . .
 
-# 7. Expose the application port
+# 8. Expose the app port
 EXPOSE 8000
 
-# 8. Set the default command to run the FastAPI app
-CMD ["python", "pain001_API.py"]
+# 9. Run FastAPI app
+CMD ["uvicorn", "pain001_API:app", "--host", "0.0.0.0", "--port", "8000"]
