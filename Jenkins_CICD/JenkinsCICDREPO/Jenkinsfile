@@ -10,7 +10,7 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        git url: 'https://github.com/Akhil-317/Redeploying.git', credentialsId: 'redeploy-git'
+        git url: 'https://github.com/Akhil-317/vsphere-ci-cd.git', credentialsId: 'vsphere-ci-cd-git'
       }
     }
 

@@ -7,7 +7,7 @@ WORKDIR /app
 # 3. Copy requirements first for caching
 COPY requirements.txt .
 
-# 4. Install system dependencies required for aiohttp and psycopg2
+# 4. Install system dependencies required for psycopg2 and compilation
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
